@@ -1,5 +1,5 @@
-# url: 'http://delphi.org'
-url: "https://delphiorg.github.io/"
+url: 'https://delphi.org'
+# url: "https://delphiorg.github.io/"
 title: 'The Podcast at Delphi.org'
 tagline: 'About the Delphi programming language, tools, news, and community.'
 description: 'Beyond the being the longest running podcast about Object Pascal and Delphi programming languages, tools, news, and community, this is also Jim McKeeth''s blog on other things related to programming and technology.'
@@ -55,6 +55,9 @@ liquid:
   error_mode        : warn
   strict_filters    : false
   strict_variables  : false
+
+feed:
+  path: feed/index.xml
 
 whitelist           : []
 plugins:
