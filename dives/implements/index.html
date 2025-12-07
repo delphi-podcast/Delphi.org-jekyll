@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delphi 'Implements' Architecture Guide</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Warm Neutral & Code Blue -->
+    <!-- Application Structure Plan: 
+         The app is designed as an interactive technical dashboard for experienced developers.
+         1. 'Concept Engine': Top-level navigation to switch between Definition, Syntax, Architecture, and Memory Models.
+         2. 'Syntax Dissector': An interactive code block where clicking tokens reveals deep-dive explanations.
+         3. 'Architecture Lab': Uses a Radar Chart to compare Composition (via implements) vs. Classical Inheritance.
+         4. 'Pattern Playground': Interactive tabs demonstrating Multiple Inheritance, Adapter Pattern, and Decorator.
+         5. 'Memory Deep Dive': A dedicated section for TAggregatedObject.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Radar Chart (Chart.js): Visualizes trade-offs.
+         2. DOM-based Diagram: "Object Composition Map".
+         3. Interactive Code Blocks: HTML/JS logic to highlight lines.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+        }
+        .code-font {
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        
+        /* Interactive Token Styling - High Visibility */
+        .interactive-token {
+            cursor: pointer;
+            border-bottom: 2px dashed #94a3b8; /* Visible dashed underline */
+            background-color: rgba(255, 255, 255, 0.1); /* Subtle background highlight */
+            border-radius: 4px;
+            padding: 0 4px;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            display: inline-block;
+        }
+        .interactive-token:hover {
+            background-color: rgba(59, 130, 246, 0.3); /* Stronger blue on hover */
+            border-bottom: 2px solid #60a5fa;
+            color: #ffffff !important;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+        .active-token {
+            background-color: #2563eb !important; /* Solid Blue-600 */
+            color: white !important;
+            border-bottom: 2px solid white;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.7);
+            font-weight: bold;
+        }
+        /* Pulse animation for unselected tokens to hint interactivity */
+        .interactive-token::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 4px;
+            box-shadow: 0 0 0 0 rgba(148, 163, 184, 0.4);
+            animation: pulse-hint 3s infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes pulse-hint {
+            0% { box-shadow: 0 0 0 0 rgba(148, 163, 184, 0); }
+            50% { box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.3); }
+            100% { box-shadow: 0 0 0 0 rgba(148, 163, 184, 0); }
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #2563eb; /* blue-600 */
+            color: #1e3a8a; /* blue-900 */
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #78716c; /* stone-500 */
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-stone-800 antialiased">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-stone-900 tracking-tight">
+                        <span class="text-blue-600">Delphi</span><span class="font-light">Architect</span>
+                    </span>
+                    <span class="ml-4 px-2 py-1 bg-stone-100 text-xs rounded text-stone-500 font-mono">directive: implements</span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <button onclick="navTo('section-concept')" class="text-stone-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition">Concept</button>
+                    <button onclick="navTo('section-syntax')" class="text-stone-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition">Syntax Anatomy</button>
+                    <button onclick="navTo('section-patterns')" class="text-stone-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition">Patterns</button>
+                    <button onclick="navTo('section-memory')" class="text-stone-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition">Memory (Critical)</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Intro Section -->
+        <section id="section-concept" class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center fade-in">
+            <div class="space-y-4">
+                <h1 class="text-4xl font-extrabold text-stone-900">Composition Over Inheritance <br><span class="text-blue-600">Made Native</span></h1>
+                <p class="text-lg text-stone-600 leading-relaxed">
+                    You know interfaces, and you know inheritance. Delphi's <code>implements</code> keyword bridges the gap, allowing a class to delegate the implementation of an interface to an internal property.
+                </p>
+                <p class="text-stone-600">
+                    This enables <strong>Multiple Inheritance of Implementation</strong> (conceptually) without the "Diamond Problem" complexity, by aggregating separate implementation objects into a single host.
+                </p>
+                <div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r shadow-sm">
+                    <h3 class="font-bold text-blue-900 mb-1">Architectural Insight</h3>
+                    <p class="text-sm text-blue-800">
+                        Instead of writing wrapper methods that simply call <code>FInnerObj.Method</code>, the compiler automatically routes <code>QueryInterface</code> calls for the specified interface to the property instance.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone-200">
+                <h3 class="text-sm font-bold text-stone-400 uppercase tracking-wider mb-4">Architecture Trade-offs</h3>
+                <div class="chart-container">
+                    <canvas id="architectureChart"></canvas>
+                </div>
+                <p class="text-xs text-center text-stone-500 mt-2">Comparison: Standard Inheritance vs. Delegation (Implements)</p>
+            </div>
+        </section>
+
+        <hr class="border-stone-200">
+
+        <!-- Technical Overview & References (New Section) -->
+        <section id="section-overview" class="fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Definition Block -->
+                <div class="md:col-span-2 bg-white rounded-lg shadow-sm border border-stone-200 p-6">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="text-2xl text-blue-600">⚡</span>
+                        <h2 class="text-2xl font-bold text-stone-900">The <code>implements</code> Directive</h2>
+                    </div>
+                    <p class="text-stone-700 leading-7 mb-4">
+                        In standard Delphi interface implementation, the host class must implement every method defined in the interface. The <code>implements</code> directive modifies this behavior by telling the compiler:
+                        <span class="italic text-stone-900 font-semibold">"Do not look for the methods of this interface in my method table. Instead, delegate the implementation to this property."</span>
+                    </p>
+                    <p class="text-stone-700 leading-7">
+                        When <code>QueryInterface</code> is called on the host for the specific interface ID (IID), the host returns the pointer to the object or interface held in the specified property. This allows you to mix in behaviors from other classes dynamically.
+                    </p>
+                </div>
+
+                <!-- References Block -->
+                <div class="md:col-span-1 bg-stone-100 rounded-lg p-6 border border-stone-200">
+                    <h3 class="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4 border-b border-stone-300 pb-2">Authoritative References</h3>
+                    <ul class="space-y-4">
+                        <li>
+                            <a href="https://docwiki.embarcadero.com/RADStudio/Athens/en/Implementing_Interfaces#Delegation_by_Using_the_implements_Keyword" target="_blank" class="group flex items-start">
+                                <span class="text-blue-500 mr-2 group-hover:text-blue-700">↗</span>
+                                <div>
+                                    <div class="text-sm font-bold text-blue-700 group-hover:underline">DocWiki: Implementing Interfaces</div>
+                                    <div class="text-xs text-stone-500 mt-1">Official definition of delegation by using the implements keyword.</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://docwiki.embarcadero.com/RADStudio/Athens/en/Properties_(Delphi)#Implements_Clause" target="_blank" class="group flex items-start">
+                                <span class="text-blue-500 mr-2 group-hover:text-blue-700">↗</span>
+                                <div>
+                                    <div class="text-sm font-bold text-blue-700 group-hover:underline">DocWiki: Property Clauses</div>
+                                    <div class="text-xs text-stone-500 mt-1">Detailed syntax constraints for the property declaration.</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-stone-200">
+
+        <!-- Syntax Anatomy Section -->
+        <section id="section-syntax" class="space-y-6 fade-in">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-bold text-stone-900">Syntax Anatomy</h2>
+                <p class="text-stone-600 mt-2">
+                    Click the <span class="border-b-2 border-dashed border-stone-400 font-mono text-sm bg-stone-200 px-1 rounded">interactive code tokens</span> below to understand how the compiler wires the Virtual Method Table (VMT).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Code Block -->
+                <div class="lg:col-span-2 bg-stone-900 rounded-lg shadow-xl overflow-hidden text-white code-font text-sm leading-relaxed">
+                    <div class="bg-stone-800 px-4 py-2 text-stone-400 text-xs border-b border-stone-700 flex justify-between">
+                        <span>Unit: UHostController.pas</span>
+                        <span>Delphi RTL</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-2"><span class="text-purple-400">type</span></div>
+                        <div class="pl-4">
+                            <span class="text-stone-400">// The Interface Definition</span><br>
+                            ILogger = <span class="text-purple-400">interface</span><br>
+                            &nbsp;&nbsp;['{...}']<br>
+                            &nbsp;&nbsp;<span class="text-purple-400">procedure</span> Log(Msg: <span class="text-blue-300">string</span>);<br>
+                            <span class="text-purple-400">end</span>;<br><br>
+
+                            <span class="text-stone-400">// The Host Class</span><br>
+                            THost = <span class="text-purple-400">class</span>(TInterfacedObject, <span class="interactive-token" onclick="explainSyntax('interface_decl')">ILogger</span>)<br>
+                            <span class="text-purple-400">private</span><br>
+                            &nbsp;&nbsp;<span class="interactive-token" onclick="explainSyntax('field_decl')">FLoggerImpl: TMyLogger;</span><br>
+                            <span class="text-purple-400">public</span><br>
+                            &nbsp;&nbsp;<span class="text-purple-400">constructor</span> Create;<br>
+                            &nbsp;&nbsp;<span class="text-purple-400">property</span> Logger: ILogger <br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">read</span> <span class="interactive-token" onclick="explainSyntax('read_clause')">FLoggerImpl</span> <br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-yellow-400 font-bold interactive-token" onclick="explainSyntax('implements_keyword')">implements ILogger</span>;<br>
+                            <span class="text-purple-400">end</span>;
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation Panel -->
+                <div class="bg-white p-6 rounded-lg shadow border border-stone-200 flex flex-col justify-center">
+                    <div id="syntax-title" class="text-lg font-bold text-stone-900 mb-2">Select a Token</div>
+                    <div id="syntax-desc" class="text-stone-600 text-sm">
+                        Click on parts of the code to see how Delphi handles the delegation logic internally.
+                    </div>
+                    <div id="syntax-technical" class="mt-4 p-3 bg-stone-50 rounded border border-stone-200 text-xs font-mono text-stone-700 hidden">
+                        <!-- Technical details will appear here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Patterns Section -->
+        <section id="section-patterns" class="space-y-6 fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end">
+                <div>
+                    <h2 class="text-3xl font-bold text-stone-900">Architectural Patterns</h2>
+                    <p class="text-stone-600 mt-2">Three powerful ways to leverage `implements` in production code.</p>
+                </div>
+                
+                <!-- Tab Navigation -->
+                <div class="flex space-x-2 mt-4 md:mt-0 bg-stone-200 p-1 rounded-lg">
+                    <button onclick="switchPattern('multi')" id="tab-multi" class="tab-active px-4 py-2 rounded-md text-sm transition">Multiple Inheritance</button>
+                    <button onclick="switchPattern('adapter')" id="tab-adapter" class="tab-inactive px-4 py-2 rounded-md text-sm transition">Adapter</button>
+                    <button onclick="switchPattern('decorator')" id="tab-decorator" class="tab-inactive px-4 py-2 rounded-md text-sm transition">Decorator</button>
+                </div>
+            </div>
+
+            <!-- Pattern Content Area -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Visual Logic -->
+                <div class="order-2 md:order-1 flex flex-col gap-4">
+                    <div id="pattern-desc-title" class="text-xl font-bold text-stone-800">Simulating Multiple Inheritance</div>
+                    <div id="pattern-desc-text" class="text-stone-600">
+                        Delphi classes only support single inheritance. However, using `implements`, a single class can expose interfaces implemented by entirely different internal objects.
+                    </div>
+                    
+                    <!-- DOM Diagram -->
+                    <div class="mt-4 border-2 border-dashed border-stone-300 rounded-xl p-6 relative bg-white">
+                        <div class="absolute top-0 left-0 bg-stone-100 px-2 py-1 text-xs font-bold text-stone-500 rounded-br">THost Class</div>
+                        
+                        <div class="flex flex-col gap-4 mt-4">
+                            <!-- Host logic -->
+                            <div class="bg-stone-100 p-3 rounded border border-stone-200 text-center text-sm font-semibold text-stone-600">
+                                Core Host Logic
+                            </div>
+                            
+                            <!-- Delegates -->
+                            <div class="flex gap-4">
+                                <div class="flex-1 bg-blue-50 p-4 rounded border border-blue-200 text-center">
+                                    <div class="text-xs text-blue-400 mb-1">Delegate 1</div>
+                                    <div class="font-bold text-blue-800">IPersist</div>
+                                    <div class="text-[10px] text-blue-600 mt-1">Handles Saving</div>
+                                </div>
+                                <div class="flex-1 bg-amber-50 p-4 rounded border border-amber-200 text-center">
+                                    <div class="text-xs text-amber-400 mb-1">Delegate 2</div>
+                                    <div class="font-bold text-amber-800">IValidate</div>
+                                    <div class="text-[10px] text-amber-600 mt-1">Handles Rules</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Implementation -->
+                <div class="order-1 md:order-2 bg-stone-900 rounded-lg p-4 shadow-lg overflow-x-auto">
+                    <pre id="pattern-code" class="code-font text-sm text-stone-300 leading-6"></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Memory Management Section (Deep Dive) -->
+        <section id="section-memory" class="bg-stone-800 text-white rounded-xl p-8 shadow-2xl fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <span class="bg-red-500 text-white p-2 rounded-lg">
+                            <!-- Simple Alert Icon -->
+                            <span class="text-xl font-bold">!</span>
+                        </span>
+                        <h2 class="text-2xl font-bold">The Reference Counting Trap</h2>
+                    </div>
+                    
+                    <p class="text-stone-300 mb-4 leading-relaxed">
+                        The biggest danger when using `implements` is the <strong>Circular Reference</strong>. If your Host holds a reference to the Delegate (Implementation), and the Delegate holds a reference back to the Host (which often happens implicitly in interfaces), you get a memory leak.
+                    </p>
+
+                    <h3 class="text-lg font-semibold text-white mt-6 mb-2">The Solution: TAggregatedObject</h3>
+                    <p class="text-stone-400 text-sm mb-4">
+                        Standard <code>TInterfacedObject</code> maintains its own RefCount. <code>TAggregatedObject</code> delegates its RefCounting to a "Controller" (the Host).
+                    </p>
+
+                    <ul class="space-y-3 mt-4">
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">✓</span>
+                            <span class="text-stone-300 text-sm"><strong>Host</strong> is the Controller.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">✓</span>
+                            <span class="text-stone-300 text-sm"><strong>Delegate</strong> inherits from <code>TAggregatedObject</code>.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">✓</span>
+                            <span class="text-stone-300 text-sm">Pass <code>Self</code> (Host) to Delegate's constructor.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-stone-900 rounded border border-stone-700 p-4 font-mono text-sm relative">
+                    <div class="absolute top-2 right-2 text-xs text-stone-500">Correct Implementation</div>
+                    <div class="text-purple-400">type</div>
+                    <div class="pl-4">
+                        <span class="text-stone-500">// Delegate Class</span><br>
+                        TMyDelegate = <span class="text-purple-400">class</span>(<span class="text-yellow-400 font-bold">TAggregatedObject</span>, IMyIntf)<br>
+                        ...<br>
+                        <span class="text-purple-400">end</span>;<br><br>
+                        
+                        <span class="text-stone-500">// Host Class</span><br>
+                        THost = <span class="text-purple-400">class</span>(TInterfacedObject, IMyIntf)<br>
+                        <span class="text-purple-400">private</span><br>
+                          FImpl: TMyDelegate;<br>
+                        <span class="text-purple-400">public</span><br>
+                          <span class="text-purple-400">constructor</span> Create;<br>
+                          <span class="text-purple-400">property</span> AsIntf: IMyIntf <br>
+                            &nbsp;&nbsp;<span class="text-purple-400">read</span> FImpl <span class="text-purple-400">implements</span> IMyIntf;<br>
+                        <span class="text-purple-400">end</span>;<br><br>
+                        
+                        <span class="text-stone-500">// Construction</span><br>
+                        <span class="text-purple-400">constructor</span> THost.Create;<br>
+                        <span class="text-purple-400">begin</span><br>
+                          <span class="text-stone-500">// Pass Host (Self) as Controller</span><br>
+                          FImpl := TMyDelegate.Create(<span class="text-green-400">Self</span>);<br>
+                        <span class="text-purple-400">end</span>;
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-stone-200 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-stone-500 text-sm">
+            <p>&copy; 2025 Delphi Architecture Guide. Generated for Educational Purposes.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            currentPattern: 'multi',
+            chartInstance: null
+        };
+
+        // --- Data Storage ---
+        // Uses HTML strings for syntax highlighting
+        const patternData = {
+            multi: {
+                title: "Simulating Multiple Inheritance",
+                desc: "Delphi classes only support single inheritance. However, using `implements`, a single class can expose interfaces implemented by entirely different internal objects. This keeps the Host class clean.",
+                code: `<span class="text-purple-400">type</span>
+  <span class="text-stone-500">// The 'Hybrid' Object</span>
+  TSmartDocument = <span class="text-purple-400">class</span>(TInterfacedObject, IPersist, IValidate)
+  <span class="text-purple-400">private</span>
+    FPersister: TSQLPersister;
+    FValidator: TRuleValidator;
+  <span class="text-purple-400">public</span>
+    <span class="text-stone-500">// Expose IPersist via FPersister</span>
+    <span class="text-purple-400">property</span> Persist: IPersist 
+      <span class="text-purple-400">read</span> FPersister <span class="text-yellow-400">implements</span> IPersist;
+
+    <span class="text-stone-500">// Expose IValidate via FValidator</span>
+    <span class="text-purple-400">property</span> Validate: IValidate 
+      <span class="text-purple-400">read</span> FValidator <span class="text-yellow-400">implements</span> IValidate;
+      
+    <span class="text-purple-400">constructor</span> Create; <span class="text-stone-500">// Create sub-objects</span>
+  <span class="text-purple-400">end</span>;`
+            },
+            adapter: {
+                title: "The Adapter Pattern",
+                desc: "You have a legacy class (TLegacyCalculator) that doesn't implement your new interface (ICalc). Instead of rewriting it, the Host implements ICalc but delegates the work to an instance of TLegacyCalculator.",
+                code: `<span class="text-purple-400">type</span>
+  TModernCalc = <span class="text-purple-400">class</span>(TInterfacedObject, ICalc)
+  <span class="text-purple-400">private</span>
+    <span class="text-stone-500">// The Legacy object (doesn't know about ICalc)</span>
+    FLegacy: TLegacyCalculator; 
+    
+    <span class="text-stone-500">// An internal helper that maps ICalc -> TLegacy</span>
+    FAdapter: TCalcAdapter; 
+  <span class="text-purple-400">public</span>
+    <span class="text-purple-400">constructor</span> Create;
+    
+    <span class="text-stone-500">// Host exposes ICalc, but FAdapter does the work</span>
+    <span class="text-purple-400">property</span> Calc: ICalc 
+      <span class="text-purple-400">read</span> FAdapter <span class="text-yellow-400">implements</span> ICalc;
+  <span class="text-purple-400">end</span>;
+  
+  <span class="text-stone-500">// TCalcAdapter inherits TAggregatedObject and calls 
+  // methods on TLegacyCalculator</span>`
+            },
+            decorator: {
+                title: "Decorator / Proxy",
+                desc: "The Host implements the interface, but delegates it to another object. This allows you to 'intercept' the interface query or swap the implementation at runtime without the consumer knowing.",
+                code: `<span class="text-purple-400">type</span>
+  TSecureService = <span class="text-purple-400">class</span>(TInterfacedObject, IService)
+  <span class="text-purple-400">private</span>
+    FRealService: IService;
+    FGuestService: IService;
+    
+    <span class="text-purple-400">function</span> GetActiveService: IService;
+  <span class="text-purple-400">public</span>
+    <span class="text-stone-500">// Dynamically choose which implementation to return
+    // based on login state</span>
+    <span class="text-purple-400">property</span> CurrentService: IService 
+      <span class="text-purple-400">read</span> GetActiveService <span class="text-yellow-400">implements</span> IService;
+  <span class="text-purple-400">end</span>;
+  
+<span class="text-purple-400">function</span> TSecureService.GetActiveService: IService;
+<span class="text-purple-400">begin</span>
+  <span class="text-purple-400">if</span> IsAdmin <span class="text-purple-400">then</span> Result := FRealService
+  <span class="text-purple-400">else</span> Result := FGuestService;
+<span class="text-purple-400">end</span>;`
+            }
+        };
+
+        const syntaxData = {
+            interface_decl: {
+                title: "Interface Declaration",
+                desc: "The Host class declares that it supports ILogger. Usually, this means the Host MUST implement `Log`. With `implements`, the compiler relaxes this rule.",
+                tech: "Normally, missing methods cause a compile error: 'Unsatisfied forward or external declaration'. The `implements` directive suppresses this validation for the host."
+            },
+            field_decl: {
+                title: "The Delegate Field",
+                desc: "This is the object that actually does the work. It must be a class instance or interface field.",
+                tech: "If this is a class type (TMyLogger), it creates a static dependency. If it is an interface type (ILogger), it allows for runtime swapping (Decorator Pattern)."
+            },
+            read_clause: {
+                title: "Property Read Accessor",
+                desc: "The property maps the delegation to a field or a Getter method.",
+                tech: "If mapped to a method (Function GetLogger: ILogger), the method is called every time `QueryInterface` requests ILogger. This enables dynamic behavior."
+            },
+            implements_keyword: {
+                title: "The Implements Directive",
+                desc: "The Magic. It tells the compiler: 'When someone asks for ILogger via QueryInterface, return the object pointer found in this property.'",
+                tech: "The compiler generates a stub in the VMT (Virtual Method Table). When `THost.QueryInterface(ILogger, ...)` occurs, it resolves the property and returns the delegate's pointer, not the Host's pointer."
+            }
+        };
+
+        // --- Core Interactions ---
+
+        function navTo(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function switchPattern(key) {
+            state.currentPattern = key;
+            
+            // Update UI Tabs
+            ['multi', 'adapter', 'decorator'].forEach(k => {
+                const btn = document.getElementById(`tab-${k}`);
+                if (k === key) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.add('tab-inactive');
+                    btn.classList.remove('tab-active');
+                }
+            });
+
+            // Update Content
+            const data = patternData[key];
+            document.getElementById('pattern-desc-title').innerText = data.title;
+            document.getElementById('pattern-desc-text').innerText = data.desc;
+            document.getElementById('pattern-code').innerHTML = data.code;
+        }
+
+        function explainSyntax(key) {
+            const data = syntaxData[key];
+            const titleEl = document.getElementById('syntax-title');
+            const descEl = document.getElementById('syntax-desc');
+            const techEl = document.getElementById('syntax-technical');
+
+            titleEl.innerText = data.title;
+            descEl.innerText = data.desc;
+            techEl.innerText = "Technical: " + data.tech;
+            techEl.classList.remove('hidden');
+
+            // Highlight Logic
+            document.querySelectorAll('.interactive-token').forEach(el => el.classList.remove('active-token'));
+            event.target.classList.add('active-token');
+        }
+
+        // --- Visualization Init ---
+        
+        window.onload = function() {
+            // Initialize default pattern
+            switchPattern('multi');
+
+            const ctx = document.getElementById('architectureChart').getContext('2d');
+            
+            state.chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Flexibility', 'Decoupling', 'Code Reusability', 'Memory Safety', 'Implementation Speed'],
+                    datasets: [{
+                        label: 'Standard Inheritance',
+                        data: [40, 30, 50, 90, 80],
+                        fill: true,
+                        backgroundColor: 'rgba(120, 113, 108, 0.2)', // stone-500
+                        borderColor: 'rgba(120, 113, 108, 1)',
+                        pointBackgroundColor: 'rgba(120, 113, 108, 1)',
+                    }, {
+                        label: 'Delegation (Implements)',
+                        data: [95, 90, 85, 60, 70], // Higher flexibility/decoupling, lower memory safety (circular refs)
+                        fill: true,
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)', // blue-600
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e7e5e4' },
+                            grid: { color: '#e7e5e4' },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            pointLabels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        };
+
+    </script>
+</body>
+</html>
