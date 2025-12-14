@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delphi Attributes: RTTI vs. AOP Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 300px; 
+            max-height: 400px; 
+        } 
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .code-block { font-family: 'Consolas', 'Monaco', monospace; }
+        .tab-active { border-bottom: 2px solid #4F46E5; color: #4F46E5; background-color: #F8FAFC; }
+        .tab-inactive { color: #64748B; border-bottom: 2px solid transparent; }
+        .tab-inactive:hover { color: #334155; background-color: #F1F5F9; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-800">
+
+    <!-- Chosen Palette: Slate (Backgrounds/Text), Indigo (Primary/Interaction), Amber (Highlights/Warnings), Emerald (Success). This creates a professional, technical, and warm neutral environment suitable for architectural documentation. -->
+
+    <!-- Application Structure Plan: 
+         The app is designed as a "Technical Architecture Lab".
+         1. Header: Sets the context - The "Passive" vs "Active" dilemma.
+         2. Navigation: Tabs to switch between Theory (RTTI), Implementation (AOP), and Analysis (Performance).
+         3. Content Area:
+            - 'The Core Truth': Interactive comparison cards clarifying that Delphi attributes are passive by default.
+            - 'The Mechanics': A visual stack showing how RTTI Context extracts data.
+            - 'The AOP Lab': The interactive core. A simulation of using TVirtualInterface to make attributes "Active". This answers the user's main question about changing functionality.
+            - 'Performance': A Chart.js visualization of the cost of reflection/interception.
+         4. Footer: Key takeaways.
+         Why this structure? It mirrors the learning path of a senior dev: "How does it work?" -> "How do I hack it?" -> "What does it cost?".
+    -->
+
+    <!-- Visualization & Content Choices:
+         - RTTI Logic: Stacked HTML/Flexbox blocks. Goal: Show hierarchy.
+         - AOP Simulation: Interactive HTML Step-Flow. Goal: Demonstrate the runtime injection process (TVirtualInterface) which is the missing link for the user.
+         - Performance: Bar Chart (Chart.js). Goal: Compare direct calls vs RTTI lookups vs Interception. Justification: Visualizing latency impact is crucial for architecture decisions.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div id="app" class="max-w-6xl mx-auto min-h-screen flex flex-col">
+        
+        <!-- Header Section -->
+        <header class="bg-white border-b border-slate-200 px-6 py-8 shadow-sm">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Delphi Attributes & AOP</h1>
+                    <p class="text-slate-500 mt-2 text-lg">From Passive Metadata to Runtime Interception</p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">Architecture Guide</span>
+                </div>
+            </div>
+            <p class="mt-4 text-slate-600 max-w-3xl leading-relaxed">
+                You asked about the limits of Attributes in Delphi compared to C#. The short answer: 
+                <span class="font-semibold text-slate-900">Delphi attributes are purely passive RTTI metadata.</span> 
+                They do not alter class behavior natively. However, by combining them with <code class="text-sm bg-slate-100 px-1 rounded">TVirtualInterface</code> and runtime interception, you <strong>can</strong> achieve Attribute-Oriented Programming (AOP).
+            </p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="flex border-b border-slate-200 bg-white sticky top-0 z-10 overflow-x-auto">
+            <button id="tab-concepts" onclick="switchTab('concepts')" class="tab-active flex-1 py-4 px-6 text-sm font-medium text-center focus:outline-none transition-colors duration-200 whitespace-nowrap">1. The Passive Reality</button>
+            <button id="tab-mechanics" onclick="switchTab('mechanics')" class="tab-inactive flex-1 py-4 px-6 text-sm font-medium text-center focus:outline-none transition-colors duration-200 whitespace-nowrap">2. How RTTI Works</button>
+            <button id="tab-aop" onclick="switchTab('aop')" class="tab-inactive flex-1 py-4 px-6 text-sm font-medium text-center focus:outline-none transition-colors duration-200 whitespace-nowrap">3. The AOP Gap (Solution)</button>
+            <button id="tab-performance" onclick="switchTab('performance')" class="tab-inactive flex-1 py-4 px-6 text-sm font-medium text-center focus:outline-none transition-colors duration-200 whitespace-nowrap">4. Performance Cost</button>
+        </nav>
+
+        <!-- Main Content Container -->
+        <main class="flex-grow bg-slate-50 p-6">
+
+            <!-- SECTION 1: CONCEPTS -->
+            <section id="content-concepts" class="animate-fade-in block space-y-8">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">The Fundamental Limit</h2>
+                    <p class="text-slate-600 mb-6">
+                        In C# (especially with tools like PostSharp) or Java (Spring AOP), attributes can trigger code injection at compile-time or load-time. 
+                        In Delphi, attributes are strictly information. They sit in the binary, waiting to be read.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left: Delphi Reality -->
+                        <div class="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                            <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
+                                <h3 class="font-semibold text-slate-700">Delphi Native Behavior</h3>
+                                <span class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded">Passive</span>
+                            </div>
+                            <div class="p-5 space-y-4">
+                                <div class="p-3 bg-white border border-slate-200 rounded shadow-sm">
+                                    <p class="text-sm font-bold text-indigo-600 mb-1">[MyAttribute]</p>
+                                    <p class="text-xs text-slate-500">Just data compiled into the DCU/EXE.</p>
+                                </div>
+                                <div class="flex justify-center text-slate-400 text-xl">⬇️</div>
+                                <div class="p-3 bg-white border border-slate-200 rounded shadow-sm opacity-50">
+                                    <p class="text-sm font-bold text-slate-600">Method Code</p>
+                                    <p class="text-xs text-slate-500">Executes normally. Ignores the attribute completely unless asked.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: What User Wants (AOP) -->
+                        <div class="border border-indigo-100 rounded-lg overflow-hidden bg-indigo-50/50">
+                            <div class="bg-indigo-100 p-4 border-b border-indigo-200 flex justify-between items-center">
+                                <h3 class="font-semibold text-indigo-800">AOP (Achievable via Frameworks)</h3>
+                                <span class="text-xs bg-indigo-200 text-indigo-700 px-2 py-1 rounded">Active</span>
+                            </div>
+                            <div class="p-5 space-y-4 relative">
+                                <div class="p-3 bg-white border border-indigo-200 rounded shadow-sm ring-2 ring-indigo-400 ring-offset-2">
+                                    <p class="text-sm font-bold text-indigo-600 mb-1">[LogExecution]</p>
+                                    <p class="text-xs text-slate-500">Intercepts the call *before* it hits the object.</p>
+                                </div>
+                                <div class="flex justify-center text-indigo-400 text-xl">⬇️</div>
+                                <div class="p-3 bg-white border border-indigo-200 rounded shadow-sm">
+                                    <p class="text-sm font-bold text-slate-600">Interceptor Logic</p>
+                                    <p class="text-xs text-slate-500">Executes Pre-Processing -> Calls Method -> Post-Processing.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-amber-400">
+                        <h4 class="font-bold text-slate-800">No Compile-Time Injection</h4>
+                        <p class="text-sm text-slate-600 mt-2">Delphi compilers do not support "weaving" (modifying IL/Assembly during build) based on attributes out of the box.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-indigo-500">
+                        <h4 class="font-bold text-slate-800">Runtime Only</h4>
+                        <p class="text-sm text-slate-600 mt-2">All attribute discovery happens at runtime using <code class="bg-slate-100 px-1">System.Rtti</code>. This adds a performance overhead.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-emerald-500">
+                        <h4 class="font-bold text-slate-800">Interface Based</h4>
+                        <p class="text-sm text-slate-600 mt-2">To truly change behavior, you essentially must use Interfaces + <code class="bg-slate-100 px-1">TVirtualInterface</code> to wrap the target class.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: MECHANICS -->
+            <section id="content-mechanics" class="hidden space-y-8">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">The RTTI Extraction Loop</h2>
+                    <p class="text-slate-600 mb-6">
+                        Before building AOP, you must understand how to read the data. This is the "Manual" approach. 
+                        In modern Delphi, <code class="code-block text-indigo-600">TRttiContext</code> is your gateway.
+                    </p>
+
+                    <!-- Interactive Code Explorer -->
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Visual Flow -->
+                        <div class="w-full md:w-1/3 flex flex-col space-y-4">
+                            <div onclick="showRttiStep(1)" class="cursor-pointer hover:bg-indigo-50 transition p-4 border border-slate-300 rounded-lg text-center bg-white shadow-sm rtti-step" id="rtti-step-1">
+                                <span class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Step 1</span>
+                                <span class="font-bold text-slate-800">Decorate Class</span>
+                            </div>
+                            <div class="h-6 w-0.5 bg-slate-300 mx-auto"></div>
+                            <div onclick="showRttiStep(2)" class="cursor-pointer hover:bg-indigo-50 transition p-4 border border-slate-300 rounded-lg text-center bg-white shadow-sm rtti-step" id="rtti-step-2">
+                                <span class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Step 2</span>
+                                <span class="font-bold text-slate-800">Create RTTI Context</span>
+                            </div>
+                            <div class="h-6 w-0.5 bg-slate-300 mx-auto"></div>
+                            <div onclick="showRttiStep(3)" class="cursor-pointer hover:bg-indigo-50 transition p-4 border border-slate-300 rounded-lg text-center bg-white shadow-sm rtti-step" id="rtti-step-3">
+                                <span class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Step 3</span>
+                                <span class="font-bold text-slate-800">Query Attributes</span>
+                            </div>
+                            <div class="h-6 w-0.5 bg-slate-300 mx-auto"></div>
+                            <div onclick="showRttiStep(4)" class="cursor-pointer hover:bg-indigo-50 transition p-4 border border-slate-300 rounded-lg text-center bg-white shadow-sm rtti-step" id="rtti-step-4">
+                                <span class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Step 4</span>
+                                <span class="font-bold text-slate-800">Apply Logic</span>
+                            </div>
+                        </div>
+
+                        <!-- Code Display -->
+                        <div class="w-full md:w-2/3 bg-slate-900 rounded-lg p-6 overflow-hidden relative shadow-lg">
+                            <div class="absolute top-0 right-0 bg-slate-800 text-slate-300 text-xs px-2 py-1 rounded-bl">Delphi / Object Pascal</div>
+                            <pre class="text-sm text-indigo-100 code-block overflow-x-auto" id="rtti-code-display">
+// Click steps on the left to see the code explanation
+type
+  TMyAttribute = class(TCustomAttribute)
+    // ...
+  end;
+
+  [TMyAttribute('Hello World')]
+  TMyClass = class
+  end;
+                            </pre>
+                            <div id="rtti-explanation" class="mt-4 pt-4 border-t border-slate-700 text-slate-400 text-sm">
+                                Define a custom attribute by descending from <code class="text-white">TCustomAttribute</code>. Annotate your class or method using brackets <code class="text-white">[]</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: THE AOP LAB (Core Functionality) -->
+            <section id="content-aop" class="hidden space-y-8">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Implementing AOP (The "Active" Part)</h2>
+                    <p class="text-slate-600 mb-6">
+                        To answer your question: <strong>Can it change functionality?</strong> Yes, but you must build a "wrapper". 
+                        The standard way in Delphi is using <code class="code-block text-indigo-600">TVirtualInterface</code>. 
+                        This allows you to create an object at runtime that intercepts method calls (Invoke) similar to <code class="code-block">RealProxy</code> in .NET.
+                    </p>
+
+                    <!-- AOP Simulation UI -->
+                    <div class="bg-slate-100 rounded-xl p-6 border border-slate-200">
+                        <div class="flex flex-col lg:flex-row gap-8">
+                            
+                            <!-- Control Panel -->
+                            <div class="w-full lg:w-1/3 space-y-4">
+                                <h3 class="font-bold text-slate-700 uppercase text-xs tracking-wider">Configuration</h3>
+                                
+                                <div class="bg-white p-4 rounded shadow-sm border border-slate-200">
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="aop-toggle-logging" class="form-checkbox h-5 w-5 text-indigo-600 rounded transition duration-150 ease-in-out">
+                                        <span class="text-slate-700 font-medium">Add [Log] Attribute</span>
+                                    </label>
+                                    <p class="text-xs text-slate-500 mt-2 pl-8">Annotates method with metadata.</p>
+                                </div>
+
+                                <div class="bg-white p-4 rounded shadow-sm border border-slate-200">
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="aop-toggle-security" class="form-checkbox h-5 w-5 text-indigo-600 rounded transition duration-150 ease-in-out">
+                                        <span class="text-slate-700 font-medium">Add [AdminOnly] Attribute</span>
+                                    </label>
+                                    <p class="text-xs text-slate-500 mt-2 pl-8">Requires 'UserRole' validation.</p>
+                                </div>
+
+                                <button onclick="runAopSimulation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded shadow transition-transform transform active:scale-95">
+                                    Execute Method Call
+                                </button>
+                            </div>
+
+                            <!-- Visualization Pipeline -->
+                            <div class="w-full lg:w-2/3">
+                                <h3 class="font-bold text-slate-700 uppercase text-xs tracking-wider mb-2">Execution Pipeline (TVirtualInterface)</h3>
+                                
+                                <div class="bg-slate-800 rounded-lg p-4 font-mono text-sm text-green-400 min-h-[200px] overflow-y-auto" id="aop-console">
+                                    <span class="text-slate-500">// System ready. Configure attributes and click Execute.</span><br>
+                                    <span class="text-slate-500">// Waiting for ICalculator.DoCalculation()...</span>
+                                </div>
+
+                                <div class="mt-4 flex justify-between text-xs text-slate-500 px-2">
+                                    <div class="text-center">
+                                        <div class="w-2 h-2 bg-indigo-500 rounded-full mx-auto mb-1"></div>
+                                        Caller
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="w-2 h-2 bg-amber-500 rounded-full mx-auto mb-1"></div>
+                                        Interceptor (Invoke)
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="w-2 h-2 bg-emerald-500 rounded-full mx-auto mb-1"></div>
+                                        Target Object
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
+                        <h4 class="font-bold text-indigo-800 mb-2">How this works in Delphi Code:</h4>
+                        <ol class="list-decimal list-inside text-sm text-indigo-900 space-y-2">
+                            <li>You define an Interface (e.g., <code class="bg-white px-1 border border-indigo-200 rounded">ICalculator</code>).</li>
+                            <li>You create a factory that returns <code class="bg-white px-1 border border-indigo-200 rounded">TVirtualInterface.Create(TypeInfo(ICalculator), InvokeHandler)</code>.</li>
+                            <li>The <code class="bg-white px-1 border border-indigo-200 rounded">InvokeHandler</code> closure inspects the Method RTTI for your Attributes.</li>
+                            <li>If <code class="bg-white px-1 border border-indigo-200 rounded">[Log]</code> is found, it runs logging code before invoking the actual object.</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: PERFORMANCE -->
+            <section id="content-performance" class="hidden space-y-8">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Performance & Limitations</h2>
+                    <p class="text-slate-600 mb-6">
+                        Because Delphi Attributes are not compiled into direct jumps, using RTTI has a cost. Using Virtual Interface interception has a higher cost.
+                    </p>
+
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <div class="w-full md:w-1/2">
+                            <!-- Chart Container -->
+                            <div class="chart-container">
+                                <canvas id="perfChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-1/2 space-y-4">
+                            <h3 class="font-bold text-slate-700">The Cost of "Magic"</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-emerald-500 mr-2"></span>
+                                    <div class="text-sm">
+                                        <strong class="block text-slate-900">Direct Call</strong>
+                                        <span class="text-slate-500">Zero overhead. CPU jumps directly to address.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-indigo-500 mr-2"></span>
+                                    <div class="text-sm">
+                                        <strong class="block text-slate-900">RTTI Lookup (Cached)</strong>
+                                        <span class="text-slate-500">Checking <code class="text-xs bg-slate-100">TRttiContext</code> is fast if cached, but slow if inspecting types every call.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-amber-500 mr-2"></span>
+                                    <div class="text-sm">
+                                        <strong class="block text-slate-900">AOP Interception</strong>
+                                        <span class="text-slate-500"><code class="text-xs bg-slate-100">TVirtualInterface</code> relies on <code class="text-xs bg-slate-100">System.Rtti.Invoke</code>, which wraps arguments in TValue. It is significantly slower than direct calls (microseconds vs nanoseconds).</span>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="p-3 bg-amber-50 border-l-4 border-amber-400 text-xs text-amber-800 mt-4">
+                                <strong>Recommendation:</strong> Do not use AOP attributes in tight loops (e.g., pixel processing). Use them for architectural boundaries (Services, API Controllers, Logging).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-slate-200 mt-auto">
+            <div class="max-w-6xl mx-auto px-6 py-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Key Takeaways</h5>
+                        <ul class="text-sm text-slate-600 space-y-2">
+                            <li>Attributes are passive metadata.</li>
+                            <li>Use <code class="text-xs bg-slate-100">System.Rtti</code> to read them.</li>
+                            <li>Use <code class="text-xs bg-slate-100">TVirtualInterface</code> for AOP.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Libraries to Check</h5>
+                        <ul class="text-sm text-slate-600 space-y-2">
+                            <li><a href="#" class="hover:text-indigo-600">Spring4D</a> (Best-in-class Interception)</li>
+                            <li><a href="#" class="hover:text-indigo-600">DSharp</a> (AOP Framework)</li>
+                            <li><a href="#" class="hover:text-indigo-600">Mormot</a> (Attributes for ORM/SOA)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 mt-6">Generated for Delphi Research. Concepts apply to Delphi 2010 through Modern Delphi (Athens).</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // State Management
+        const state = {
+            currentTab: 'concepts',
+            rttiStep: 1,
+            userRole: 'Guest'
+        };
+
+        // Navigation Logic
+        function switchTab(tabId) {
+            // Update Tab Styles
+            ['concepts', 'mechanics', 'aop', 'performance'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                
+                if (t === tabId) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                    content.classList.remove('hidden');
+                    content.classList.add('animate-fade-in');
+                    if (t === 'performance') renderChart();
+                } else {
+                    btn.classList.add('tab-inactive');
+                    btn.classList.remove('tab-active');
+                    content.classList.add('hidden');
+                    content.classList.remove('animate-fade-in');
+                }
+            });
+            state.currentTab = tabId;
+        }
+
+        // RTTI Step Logic
+        const rttiData = {
+            1: {
+                title: "Step 1: Decorate Class",
+                code: `type\n  TLogAttribute = class(TCustomAttribute)\n  end;\n\n  [TLogAttribute]\n  TMyService = class\n    procedure DoWork;\n  end;`,
+                desc: "Define your attribute class inheriting from TCustomAttribute. Annotate your target class or method with brackets [ ]."
+            },
+            2: {
+                title: "Step 2: Create RTTI Context",
+                code: `uses System.Rtti;\n\nvar\n  Ctx: TRttiContext;\n  Typ: TRttiType;\nbegin\n  Ctx := TRttiContext.Create;\n  try\n    Typ := Ctx.GetType(TMyService);\n    // ...\n  finally\n    Ctx.Free;\n  end;`,
+                desc: "Instantiate TRttiContext. This is the heavy lifter that scans application metadata. Usually, you cache this context."
+            },
+            3: {
+                title: "Step 3: Query Attributes",
+                code: `var\n  Attr: TCustomAttribute;\nbegin\n  for Attr in Typ.GetAttributes do\n  begin\n    if Attr is TLogAttribute then\n      WriteLn('Found Log Attribute!');\n  end;\nend;`,
+                desc: "Iterate through the GetAttributes array. Use 'is' or 'as' to check for specific attribute types you care about."
+            },
+            4: {
+                title: "Step 4: Apply Logic",
+                code: `// Inside the loop where attribute was found:\n\nif Attr is TValidationAttribute then\nbegin\n  if not TValidationAttribute(Attr).Validate(MyObj) then\n    raise Exception.Create('Validation Failed');\nend;`,
+                desc: "The attribute didn't do anything. YOU wrote the code that reacted to finding the attribute. This is the key difference from 'magic' AOP."
+            }
+        };
+
+        function showRttiStep(step) {
+            state.rttiStep = step;
+            // Highlight list
+            document.querySelectorAll('.rtti-step').forEach((el, idx) => {
+                if (idx + 1 === step) {
+                    el.classList.add('border-indigo-500', 'bg-indigo-50');
+                    el.classList.remove('border-slate-300', 'bg-white');
+                } else {
+                    el.classList.remove('border-indigo-500', 'bg-indigo-50');
+                    el.classList.add('border-slate-300', 'bg-white');
+                }
+            });
+
+            // Update Code
+            document.getElementById('rtti-code-display').textContent = rttiData[step].code;
+            document.getElementById('rtti-explanation').textContent = rttiData[step].desc;
+        }
+
+        // AOP Simulation Logic
+        function runAopSimulation() {
+            const consoleEl = document.getElementById('aop-console');
+            const useLog = document.getElementById('aop-toggle-logging').checked;
+            const useSec = document.getElementById('aop-toggle-security').checked;
+            
+            // Clear and start
+            consoleEl.innerHTML = '<span class="text-slate-400">--- New Call Request ---</span><br>';
+            
+            const append = (text, color = "text-slate-300", delay = 0) => {
+                setTimeout(() => {
+                    consoleEl.innerHTML += `<span class="${color}">${text}</span><br>`;
+                    consoleEl.scrollTop = consoleEl.scrollHeight;
+                }, delay);
+            };
+
+            append("> Caller invokes ICalculator.DoCalculation()", "text-white");
+            append("> TVirtualInterface Intercepts Call...", "text-amber-400", 300);
+
+            let timeOffset = 600;
+
+            if (useLog) {
+                append("> [Log] Attribute Detected.", "text-indigo-400", timeOffset);
+                append("  LOG: Starting execution of DoCalculation", "text-indigo-300", timeOffset + 200);
+                timeOffset += 500;
+            }
+
+            if (useSec) {
+                append("> [AdminOnly] Attribute Detected.", "text-red-400", timeOffset);
+                append("  SECURITY: Checking User Context...", "text-red-300", timeOffset + 200);
+                // Simulation: Pass assuming admin for demo, or fail
+                append("  SECURITY: Access Granted.", "text-green-400", timeOffset + 400);
+                timeOffset += 700;
+            }
+
+            append("> Forwarding to Actual Object Implementation", "text-emerald-400", timeOffset);
+            append("> ... Calculation Result: 42", "text-emerald-200", timeOffset + 300);
+
+            if (useLog) {
+                append("  LOG: Execution finished successfully.", "text-indigo-300", timeOffset + 500);
+            }
+        }
+
+        // Chart.js Logic
+        let chartInstance = null;
+        function renderChart() {
+            if (chartInstance) return; // Only render once
+            
+            const ctx = document.getElementById('perfChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Direct Call', 'Interface Call', 'RTTI Lookup', 'AOP (VirtualInterface)'],
+                    datasets: [{
+                        label: 'Approximate Relative Cost (Lower is Better)',
+                        data: [1, 1.5, 10, 50],
+                        backgroundColor: [
+                            '#10b981', // Emerald 500
+                            '#34d399', // Emerald 400
+                            '#6366f1', // Indigo 500
+                            '#f59e0b'  // Amber 500
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Relative CPU Cycles'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const labels = [
+                                        "Native ASM JMP (Fastest)", 
+                                        "VTable Lookup", 
+                                        "Scanning Metadata", 
+                                        "Argument wrapping + Reflection (Slowest)"
+                                    ];
+                                    return labels[context.dataIndex];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize RTTI view
+        showRttiStep(1);
+
+    </script>
+</body>
+</html>

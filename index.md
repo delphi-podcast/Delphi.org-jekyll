@@ -14,7 +14,7 @@ title: Home
       </a>
     </h3>
     <p class="post-meta">
-      <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%b %-d, %Y" }}</time>
+      <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y-%m-%d" }}</time>
     </p>
     <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
   </li>

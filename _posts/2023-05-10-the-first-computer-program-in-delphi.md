@@ -6,7 +6,7 @@ author: 'Jim McKeeth'
 layout: post
 guid: 'http://delphi.org/?p=3613'
 permalink: /2023/05/the-first-computer-program-in-delphi/
-image: /assets/images/2023/05/Lovelace-with-Analytic-Engine-and-Bernoulli-numbers-algorithm-1200x675.png
+image: /assets/images/2023/05/Lovelace-with-Analytic-Engine-and-Bernoulli-numbers-algorithm-1200x675.webp
 categories:
     - News
 tags:
@@ -25,7 +25,7 @@ tags:
 
 <figure class="wp-block-gallery alignfull has-nested-images columns-default is-cropped"><figure class="wp-block-image size-large"><a href="/assets/images/2023/05/IMG_8578-scaled.jpg"><img src="/assets/images/2023/05/IMG_8578-1024x765.jpg" alt="Difference Engine at CHM in Silicon Valley" class="wp-image-3622"/></a></figure>
 
-<figure class="wp-block-image size-large"><a href="/assets/images/2023/05/image-1.png"><img src="/assets/images/2023/05/image-1-1024x576.png" alt="Jim McKeeth wearing his Google Glass at the Computer History Museum in Silicon Valley standing in front of the Difference Engine" class="wp-image-3616"/></a></figure>
+<figure class="wp-block-image size-large"><a href="/assets/images/2023/05/image-1.webp"><img src="/assets/images/2023/05/image-1-1024x576.png" alt="Jim McKeeth wearing his Google Glass at the Computer History Museum in Silicon Valley standing in front of the Difference Engine" class="wp-image-3616"/></a></figure>
 
 <figure class="wp-block-image size-large"><a href="/assets/images/2023/05/IMG_8576-scaled.jpg"><img src="/assets/images/2023/05/IMG_8576-1024x765.jpg" alt="Difference Engine at CHM in Silicon Valley" class="wp-image-3620"/></a></figure>
 

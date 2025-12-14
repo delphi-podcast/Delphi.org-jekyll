@@ -6,11 +6,10 @@ author: 'Jim McKeeth'
 layout: post
 guid: 'http://delphi.org/?p=3345'
 permalink: /2019/06/manually-installing-android-sdk-ndk-and-java-for-firemonkey-development/
-image: /assets/images/2019/06/Manually-Installing-Andorid-790x198.png
 categories:
-    - News
+    - Android
 tags:
-    - News
+    - Android
 ---
 
 <figure class="wp-block-image"><img src="/assets/images/2019/06/Manually-Installing-Andorid.png" alt="" class="wp-image-3367"/></figure>
@@ -95,7 +94,7 @@ tags:
 
 <p>Last thing you need to do is set up some Environment Variables and add things to your system path. This isn't strictly necessary, but I highly recommend it! </p>
 
-<figure class="wp-block-image"><img src="/assets/images/2019/06/image-1.png" alt="" class="wp-image-3355"/><figcaption> Make sure your JAVA_HOME is correct, and set the ANDROID_HOME environment variable.  </figcaption></figure>
+<figure class="wp-block-image"><img src="/assets/images/2019/06/image-1.webp" alt="" class="wp-image-3355"/><figcaption> Make sure your JAVA_HOME is correct, and set the ANDROID_HOME environment variable.  </figcaption></figure>
 
 <p>Then add the following to your system path</p>
 

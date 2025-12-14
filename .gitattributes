@@ -4,3 +4,4 @@
 *.gif !text !filter !merge !diff
 *.ico !text !filter !merge !diff
 *.pdf !text !filter !merge !diff
+*.xcf filter=lfs diff=lfs merge=lfs -text

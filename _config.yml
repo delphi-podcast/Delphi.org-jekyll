@@ -2,7 +2,7 @@ url: 'https://delphi.org'
 # url: "https://delphiorg.github.io/"
 title: 'The Podcast at Delphi.org'
 tagline: 'About the Delphi programming language, tools, news, and community.'
-description: 'Beyond the being the longest running podcast about Object Pascal and Delphi programming languages, tools, news, and community, this is also Jim McKeeth''s blog on other things related to programming and technology.'
+description: 'Beyond being the longest running podcast about Object Pascal and Delphi programming languages, tools, news, and community, this is also Jim McKeeth''s blog on other things related to programming and technology.'
 locale: en_us
 # https://jekyll.github.io/jekyll-seo-tag/usage/
 baseurl: ""

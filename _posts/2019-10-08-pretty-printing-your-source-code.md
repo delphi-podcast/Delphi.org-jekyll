@@ -19,9 +19,7 @@ tags:
 
 <p>A picture is worth a thousand words, but how do you include source code in a presentation? By text or by image?</p>
 
-<p><a href="https://www.facebook.com/nick.hodges/posts/10156126437796627">Nick Hodges asked about this on Facebook</a> the other day. </p>
-
-<figure><iframe src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fnick.hodges%2Fposts%2F10156126437796627&amp;width=750&amp;show_text=true&amp;height=218&amp;appId" style="border:none;overflow:hidden" scrolling="no" allowtransparency="true" allow="encrypted-media" width="500" height="218" frameborder="0"></iframe></figure>
+<p><a href="https://www.facebook.com/nick.hodges/posts/10156126437796627">Nick Hodges asked about this on Facebook</a> the other day. (post is gone)</p> 
 
 <p>Here are some of the suggestions from the community (with my commentary), followed by a few of my suggestions.</p>
 
@@ -37,7 +35,7 @@ tags:
 
 <p><strong><a href="https://getgreenshot.org/">Greenshot</a></strong> - is my current preferred desktop screenshot tool for pulling images directly from the IDE. It includes a nice editor for your screenshots too, so you can quickly annotate them, blur things out, etc.</p>
 
-<div class="wp-block-image"><figure class="aligncenter is-resized"><img src="/assets/images/2019/10/image-1.png" alt="" class="wp-image-3429" width="403" height="463"/><figcaption><a href="https://getgreenshot.org/"><strong>Greenshot </strong></a>screen shot image editor</figcaption></figure></div>
+<div class="wp-block-image"><figure class="aligncenter is-resized"><img src="/assets/images/2019/10/image-1.webp" alt="" class="wp-image-3429" width="403" height="463"/><figcaption><a href="https://getgreenshot.org/"><strong>Greenshot </strong></a>screen shot image editor</figcaption></figure></div>
 
 <div class="wp-block-image"><figure class="alignright"><img src="/assets/images/2019/10/image-3.png" alt="" class="wp-image-3431"/></figure></div>
 
@@ -59,11 +57,9 @@ tags:
 
 <div class="wp-block-image"><figure class="alignright is-resized"><img src="/assets/images/2019/10/image-7.png" alt="" class="wp-image-3435" width="88" height="88"/></figure></div>
 
-<p><a href="http://instaco.de/"><strong>Instacode</strong></a> is the Instagram of the bunch, with image filters like tilt shift and 3D rotation. Directly supports Delphi language, and you can <a href="http://instaco.de/119239?remix=119237">share via a URL</a> that allows someone to access the code and remix the image. Even has wallpaper generator. </p>
+<p><strong><s>Instacode</s></strong> was the Instagram of the bunch, with image filters like tilt shift and 3D rotation. Directly supports Delphi language, and you can share a URL <s>http://instaco.de/119239?remix=119237</s> that allows someone to access the code and remix the image. Even has wallpaper generator. </p>
 
 <div class="wp-block-image"><figure class="aligncenter"><img src="http://instaco.de/stream/119239" alt=""/><figcaption><a href="http://instaco.de/119239?remix=119237">Instacode</a></figcaption></figure></div>
-
-<div class="wp-block-image"><figure class="alignright is-resized"><img src="https://cdn.worldvectorlogo.com/logos/photoshop-cc.svg" alt="Image result for photoshop logo" width="134" height="130"/></figure></div>
 
 <p>Lastly, if you have some <strong>Photoshop </strong>skills (or can follow tutorials like I do) then you can make your own. This is a combination of screenshots, with perspective warps, a few filters, background images, etc. </p>
 
