@@ -3,6 +3,13 @@ title: Delphi.org Time Travel Toolkit
 date: 2025-12-15
 permalink: /TimeTravelToolkit
 layout: page
+redirect_from:
+  - /time-travel-toolkit
+  - /time travel toolkit
+  - /timetraveltoolkit
+  - /time-travel-toolkit/
+  - /time travel toolkit/
+  - /timetraveltoolkit/
 ---
 
 Here are some resources from my Time Traveller's Toolkit session from CodeRage 2025.
