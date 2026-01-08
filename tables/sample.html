@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delphi ASCII Master Reference</title>
+    <style>
+        :root {
+            --delphi-blue: #0047AB;
+            --light-gray: #f4f4f4;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background: #fff; }
+        
+        /* 1. Global Preview Bar Style */
+        #preview-bar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: var(--delphi-blue);
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        table { border-collapse: collapse; margin-top: 60px; font-family: monospace; cursor: default; }
+        th, td { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; position: relative; }
+        th { background: var(--light-gray); font-size: 0.8em; }
+
+        /* 2. Focus & Hover State */
+        td:focus {
+            outline: none;
+            background: #e6f0ff;
+            border: 2px solid var(--delphi-blue);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+            transform: scale(1.1);
+            z-index: 2;
+        }
+
+        /* 3. The "Expanding" Alternative (Pseudo-element) */
+        td:focus::after {
+            content: "Click to Copy Hex";
+            position: absolute;
+            bottom: -25px; left: 50%;
+            transform: translateX(-50%);
+            background: #333; color: #fff;
+            font-size: 10px; padding: 2px 5px;
+            white-space: nowrap; border-radius: 3px;
+        }
+
+        .copy-toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 10px 20px; border-radius: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="preview-bar">
+    <span id="display-char">Select a character</span>
+    <b id="display-hex">#$00</b>
+    <button onclick="copyCurrent()">Copy #$ Hex</button>
+</div>
+
+<table>
+    <tr><th>x</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+    <tr>
+        <th>4_</th>
+        <td tabindex="0" data-hex="#$41" data-dec="#65" data-char="A">A</td>
+        <td tabindex="0" data-hex="#$42" data-dec="#66" data-char="B">B</td>
+        <td tabindex="0" data-hex="#$43" data-dec="#67" data-char="C">C</td>
+        <td tabindex="0" data-hex="#$44" data-dec="#68" data-char="D">D</td>
+    </tr>
+</table>
+
+<div id="toast" class="copy-toast">Copied to clipboard!</div>
+
+<script>
+    const hexDisplay = document.getElementById('display-hex');
+    const charDisplay = document.getElementById('display-char');
+    const toast = document.getElementById('toast');
+    let currentVal = "";
+
+    // Handle Focus/Click
+    document.querySelectorAll('td').forEach(cell => {
+        const update = () => {
+            currentVal = cell.getAttribute('data-hex');
+            hexDisplay.innerText = currentVal;
+            charDisplay.innerText = "Char: " + cell.getAttribute('data-char');
+        };
+
+        cell.addEventListener('focus', update);
+        cell.addEventListener('click', () => {
+            update();
+            copyCurrent();
+        });
+    });
+
+    function copyCurrent() {
+        if(!currentVal) return;
+        navigator.clipboard.writeText(currentVal);
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 1500);
+    }
+
+    // Keyboard Navigation (Arrow Keys)
+    document.addEventListener('keydown', (e) => {
+        const active = document.activeElement;
+        if (active.tagName !== 'TD') return;
+
+        let next;
+        if (e.key === "ArrowRight") next = active.nextElementSibling;
+        if (e.key === "ArrowLeft") next = active.previousElementSibling;
+        
+        if (next && next.tagName === 'TD') {
+            next.focus();
+        }
+    });
+</script>
+
+</body>
+</html>
