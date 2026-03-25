@@ -22,13 +22,21 @@ This could be adapted to debug against a remote Android Emulator running on a re
 
 Thanks to <a href="http://stackoverflow.com/users/6278/255">hheimbuerger</a> for the the <a href="http://stackoverflow.com/a/2792395/255">Stack Overflow answer</a> that got me pointed in the right direction. This information has been adapted to the <a href="http://docwiki.embarcadero.com/RADStudio/XE5/en/Running_and_Debugging_Your_Android_Application_Remotely">DocWiki</a> too with additional links to more information.
 
-http://www.youtube.com/watch?v=CacpPleWsZM
+<iframe width="420" height="315"
+src="https://www.youtube.com/embed/CacpPleWsZM">
+</iframe>
+
 <ol>
 	<li>Install the <a href="http://developer.android.com/sdk/">Android SDK</a> (not the ADT bundle) on your Mac OS X host &amp; start an ARM based emulator (With use Host GPU enabled)</li>
 	<li>Enable SSH on the host
 <ul>
 	<li>On a Mac OS X Host go to System Preferences -&gt; Sharing -&gt; Remote Login</li>
-	<li>On a Windows host, you need to install a 3rd party SSH host. <a href="http://www.freesshd.com/">FreeSSHd</a> has been found to work.</li>
+	<li>On a Windows host, <s>you need to install a 3rd party SSH host. FreeSSHd has been found to work.</s> Microsoft added <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse">OpenSSH Server support</a>.</li>
+	```powershell
+	Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+	Start-Service sshd
+	Set-Service -Name sshd -StartupType 'Automatic'
+	```
 </ul>
 </li>
 	<li>Install the <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">PuTTY SSH</a> (putty.exe) client on the Windows Guest OS</li>
