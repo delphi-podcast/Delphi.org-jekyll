@@ -1,3 +1,6 @@
+jekyll_admin:
+  homepage: pages
+
 url: 'https://delphi.org'
 # url: "https://delphiorg.github.io/"
 title: 'The Podcast at Delphi.org'
