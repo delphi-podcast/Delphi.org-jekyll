@@ -1,6 +1,8 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: delphiorg/delphiorg.github.io
   branch: main
+  base_url: https://decap-proxy.jim-557.workers.dev
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"

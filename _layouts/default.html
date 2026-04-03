@@ -59,18 +59,5 @@
     <script src="{{ '/assets/js/prism-autolinker.js' | relative_url }}"></script>
     <script src="{{ '/assets/js/prism-toolbar.js' | relative_url }}"></script>
     <script src="{{ '/assets/js/prism-copy-to-clipboard.js' | relative_url }}"></script>
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-    <script>netlifyIdentity.init({ APIUrl: "https://delphiorg.netlify.app/.netlify/identity" });</script>
-    <script>
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.on("init", user => {
-          if (!user) {
-            window.netlifyIdentity.on("login", () => {
-              document.location.href = "/admin/";
-            });
-          }
-        });
-      }
-    </script>
   </body>
 </html>
