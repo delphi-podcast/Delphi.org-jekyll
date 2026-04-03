@@ -3,6 +3,7 @@ backend:
   repo: delphiorg/delphiorg.github.io
   branch: main
   base_url: https://decap-proxy.jim-557.workers.dev
+  auth_endpoint: /auth
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
