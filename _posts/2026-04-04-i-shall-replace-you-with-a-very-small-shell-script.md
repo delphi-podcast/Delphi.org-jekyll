@@ -3,6 +3,12 @@ title: I Shall Replace You with a Very Small Shell Script
 date: 2026-04-04T17:44:00.000-06:00
 author: Jim McKeeth
 layout: post
+categories:
+  - news
+tags:
+  - ai
+  - llm
+  - markdown
 ---
 Do you remember the T-shirt "Stop bothering me, or I shall replace you with a very small shell script?" For a long time, that was just a grumpy joke from the tech support trenches. Now I’m realizing it is our new reality.
 
