@@ -6,7 +6,7 @@ layout: post
 ---
 Do you remember the T-shirt "Stop bothering me, or I shall replace you with a very small shell script?" For a long time, that was just a grumpy joke from the tech support trenches. Now I’m realizing it is our new reality.
 
-![Stop bothering me, or I shall replace you with a very small shell script](/images/uploads/shell-script.webp "Stop bothering me, or I shall replace you with a very small shell script")
+[![Stop bothering me, or I shall replace you with a very small shell script](/images/uploads/shell-script.webp "Stop bothering me, or I shall replace you with a very small shell script")](/images/uploads/shell-script.webp)
 
 ## The Gargantuan Backlog
 
