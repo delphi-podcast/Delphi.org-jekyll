@@ -12,7 +12,7 @@ Do you remember the T-shirt "Stop bothering me, or I shall replace you with a ve
 
 I just recorded a podcast with Nick Hodges (stay tuned), he pointed out a fundamental truth: the backlog of software that needs to be built is gargantuan. We have a nearly infinite list of features and tools we want to implement, but we’ve always been bottle-necked by time and cost.
 
-![Two football field's worth of backlog](/images/uploads/football-field-productivity.webp "Two football field's worth of backlog")
+[![Two football field's worth of backlog](/images/uploads/football-field-productivity.webp "Two football field's worth of backlog")](/images/uploads/football-field-productivity.webp)
 
 ### Agent coding tools change the math
 
