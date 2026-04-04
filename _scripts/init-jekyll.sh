@@ -1,30 +1,34 @@
 #!/bin/bash
-# This script initializes the Jekyll environment for this project.
+# Ensures Jekyll/Bundler are installed and project gems are synced.
 
-# Function to add a line to a file if it doesn't already exist
-add_to_file_if_not_exists() {
-  LINE=$1
-  FILE=$2
-  grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
-}
+# Ensure we are in the project root
+[[ "$(basename "$PWD")" == "_scripts" ]] && cd ..
 
-# --- Check for Ruby ---
-if ! command -v ruby &> /dev/null
-then
-    echo "Ruby could not be found. Please install Ruby."
-    echo "For example, on Debian/Ubuntu: sudo apt install ruby build-essential ruby-dev ruby-full"
-    echo "On other systems, please use your package manager (e.g., brew, yum, etc.)."
+# --- 1. Check for Ruby ---
+if ! command -v ruby &> /dev/null; then
+    echo "Error: Ruby is missing. Run 'sudo ./_scripts/install-jekyll.sh' first."
     exit 1
 fi
 
-# --- Check for Gem ---
-if ! command -v gem &> /dev/null
-then
-    echo "gem could not be found. Please ensure your Ruby installation is correct and includes RubyGems."
-    exit 1
+# --- 2. Setup PATH for the session ---
+# This ensures we find the user-level gem binaries.
+USER_GEM_BIN=$(ruby -e 'puts Gem.user_dir')/bin
+export PATH="$USER_GEM_BIN:$PATH"
+
+# --- 3. Install core gems if missing ---
+if ! command -v jekyll &> /dev/null; then
+    echo "Jekyll gem missing. Installing..."
+    gem install jekyll --user-install
 fi
 
-gem install jekyll --user-install
-gem install bundler --user-install
+if ! command -v bundle &> /dev/null; then
+    echo "Bundler gem missing. Installing..."
+    gem install bundler --user-install
+fi
 
+# --- 4. Sync Project Dependencies ---
+echo "Syncing project gems via Bundler..."
+bundle config set --local path '.bundle' # Ensure gems stay local to project
 bundle install
+
+echo "User environment ready."
