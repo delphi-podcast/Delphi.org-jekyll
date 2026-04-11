@@ -43,5 +43,6 @@ open_browser() {
 open_browser &
 
 # --- 4. Run Jekyll ---
-echo "Environment ready. Starting Jekyll server..."
-bundle exec jekyll serve --livereload
+echo "Environment ready. Starting Jekyll server (including Drafts)..."
+# Added --drafts so you can preview everything in the _drafts folder locally.
+bundle exec jekyll serve --livereload --drafts

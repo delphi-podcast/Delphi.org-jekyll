@@ -6,7 +6,6 @@
 .jekyll-metadata
 
 # Local Cache Files
-.jekyll-metadata
 .jekyll-cache/
 
 # Ruby/Bundler Environment Files
@@ -18,3 +17,4 @@ vendor/
 /_drafts/
 /_scripts/.ipynb_checkpoints
 */htmlproofer_report.txt
+/assets/RAW/processed/*
