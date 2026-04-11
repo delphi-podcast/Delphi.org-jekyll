@@ -9,3 +9,5 @@ gem 'jekyll-seo-tag'
 gem 'jekyll-tagging', '~> 1.1'
 gem 'jekyll-archives', '~> 2.3'
 gem 'jekyll-tagging-related_posts', '~> 1.3', '>= 1.3.1'
+
+gem "jekyll-admin", "~> 0.12.0", group: :jekyll_plugins
