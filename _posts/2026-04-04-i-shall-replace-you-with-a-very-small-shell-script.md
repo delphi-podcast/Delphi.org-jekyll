@@ -9,7 +9,7 @@ tags:
   - ai
   - llm
   - markdown
-image: /assets/images/2026/04/shell-script-t-shirt.avif
+image: /assets/images/2026/04/replaced-with-a-shell-script.avif
 ---
 ---
 
@@ -38,7 +38,7 @@ Earlier tonight I had a work-related call that reminded me why I’ve reached th
 
 The previous process required MS SQL Server Client installation. Typically that installs SQL Client command line utility "`SQLCMD`," and the updated process required verifying it was on the system path.  
 
-![We've tried nothing and we're out of ideas](/assets/images/2026/04/tried-nothing.avif)
+![We've tried nothing and we're out of ideas](/assets/images/2026/04/tried-nothing.avif "We've tried nothing and we're out of ideas")
 
 He didn't know how to check if the [SQL Client command line utility](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility) was on the path. I told him the easiest way was to open the terminal and type "Sequel command" (pronouncing it, not spelling it). Even with the document in front of him, he repeatedly typed `SQL Command` (with a space) instead of `sqlcmd`. I finally had to literally tell him the individual keys to press. Reminded me of when I did tech support back in the ‘90.
 
@@ -53,7 +53,7 @@ I decided to test this theory with the exact instructions that had just caused a
 
 I got busy with two other agents, and in a few minutes the script was written, tested, and documented (not that anyone would read or understand it.)
 
-![Can you be replaced by a shell script?](/assets/images/2026/04/replaced-with-a-shell-script.avif)
+![Can you be replaced by a shell script?](/assets/images/2026/04/replaced-with-a-shell-script.avif "Can you be replaced by a shell script?")
 ## The Reality of the "Shell Script"
 
 The hour I spent on the phone was wasted. The instructions were fine; the "processor" (the human on the other end) was failing to execute the code. 
